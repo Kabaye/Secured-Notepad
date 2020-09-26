@@ -1,11 +1,12 @@
-package edu.bsu.sn.client.web.controller;
+package edu.bsu.sn.client.notepad.controller;
 
 import edu.bsu.sn.client.web.client.SecuredNotepadClient;
-import javax.crypto.SecretKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.crypto.SecretKey;
 
 @RestController
 @RequestMapping("/api/v1")

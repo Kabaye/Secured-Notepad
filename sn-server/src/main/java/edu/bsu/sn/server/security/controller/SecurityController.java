@@ -1,6 +1,6 @@
 package edu.bsu.sn.server.security.controller;
 
-import edu.bsu.sn.server.security.model.NewUser;
+import edu.bsu.sn.server.security.model.LogInUser;
 import edu.bsu.sn.server.security.service.SecurityService;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -16,8 +16,8 @@ public class SecurityController {
     private final SecurityService securityService;
 
     @SneakyThrows
-    @PostMapping("/register")
-    public byte[] registerNewUser(@RequestBody NewUser newUser) {
-        return securityService.registerNewUser(newUser);
+    @PostMapping("/log-in")
+    public byte[] logIn(@RequestBody LogInUser logInUser) {
+        return securityService.logInAndGetSecretKey(logInUser);
     }
 }

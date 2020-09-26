@@ -8,10 +8,12 @@ import lombok.Getter;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Component;
 
+import javax.crypto.Cipher;
+
 @Getter
 @Component
 public class CustomKeyStore {
-    private final ConcurrentHashMap<String, PublicKey> usersKeys;
+    private final ConcurrentHashMap<String, Cipher> usersCiphers;
     private final KeyStore keyStore;
     private final SecurityProperties securityProperties;
 
@@ -20,6 +22,6 @@ public class CustomKeyStore {
         this.securityProperties = securityProperties;
         keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
         keyStore.load(null, securityProperties.getPassword().toCharArray());
-        usersKeys = new ConcurrentHashMap<>();
+        usersCiphers = new ConcurrentHashMap<>();
     }
 }

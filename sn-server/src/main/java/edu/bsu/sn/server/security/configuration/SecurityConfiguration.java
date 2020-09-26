@@ -11,7 +11,6 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfiguration {
-    private final SecurityProperties securityProperties;
 
     @Bean
     @SneakyThrows

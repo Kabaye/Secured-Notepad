@@ -5,6 +5,6 @@ import lombok.experimental.Accessors;
 
 @Data
 @Accessors(chain = true)
-public class NewUserEvent {
+public class UserLoggedIn {
     private String name;
 }

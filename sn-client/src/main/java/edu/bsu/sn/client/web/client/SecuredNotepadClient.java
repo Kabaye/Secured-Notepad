@@ -1,16 +1,17 @@
 package edu.bsu.sn.client.web.client;
 
-import edu.bsu.sn.client.web.model.NewUser;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import javax.crypto.Cipher;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
+import edu.bsu.sn.client.web.model.LogInUser;
 import lombok.SneakyThrows;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
+
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 
 @Component
 public class SecuredNotepadClient {
@@ -26,7 +27,7 @@ public class SecuredNotepadClient {
         keyPairGenerator.initialize(2048);
         KeyPair keyPair = keyPairGenerator.generateKeyPair();
         byte[] body = restTemplate.exchange("http://localhost:8280/api/v1/security/register", HttpMethod.POST,
-                new HttpEntity<>(new NewUser().setPublicKey(keyPair.getPublic().getEncoded())
+                new HttpEntity<>(new LogInUser().setPublicKey(keyPair.getPublic().getEncoded())
                         .setLogin("Vova")), byte[].class)
                 .getBody();
         Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");

@@ -9,8 +9,8 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 @EnableConfigurationProperties({SecurityProperties.class})
 public class SNServerApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(SNServerApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(SNServerApplication.class, args);
+    }
 
 }

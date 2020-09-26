@@ -1,3 +1,5 @@
 server:
   port: 8280
 
+security:
+  password: ${KEY_STORE_PASSWORD}

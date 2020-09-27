@@ -38,4 +38,11 @@ public class NotepadService {
 
         return new UserFilesResponse().setUserFiles(securityService.secureText(files, username));
     }
+
+    @SneakyThrows
+    public boolean deleteUserFile(String fileName, String username) {
+        File file = ResourceUtils.getFile(ResourceUtils.CLASSPATH_URL_PREFIX + "texts/" + username +
+                "/" + fileName);
+        return file.delete();
+    }
 }

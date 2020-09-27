@@ -35,4 +35,8 @@ public class NotepadService {
         final List<String> filesList = Arrays.stream(decryptedFilesList.split(",")).collect(Collectors.toList());
         return new UserFiles().setFileNames(filesList);
     }
+
+    public boolean deleteUserFile(String fileName, String username) {
+        return securedNotepadClient.deleteUserFile(fileName, username);
+    }
 }

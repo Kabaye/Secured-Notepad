@@ -4,6 +4,7 @@ import edu.bsu.sn.server.notepad.model.FileContent;
 import edu.bsu.sn.server.notepad.model.UserFilesResponse;
 import edu.bsu.sn.server.notepad.service.NotepadService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -27,5 +28,11 @@ public class NotepadController {
     @GetMapping("/files")
     public UserFilesResponse getUserFiles(@RequestParam("username") String username) {
         return notepadService.getUserFiles(username);
+    }
+
+    @DeleteMapping("/file")
+    public boolean deleteFile(@RequestParam("file-name") String fileName, @RequestParam("username") String username) {
+        fileName = URLDecoder.decode(fileName, StandardCharsets.UTF_8);
+        return notepadService.deleteUserFile(fileName, username);
     }
 }

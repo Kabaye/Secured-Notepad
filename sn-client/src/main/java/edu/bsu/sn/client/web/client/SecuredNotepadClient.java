@@ -43,4 +43,13 @@ public class SecuredNotepadClient {
                 .toUriString(), HttpMethod.GET, null, UserFilesResponse.class)
                 .getBody();
     }
+
+    public boolean deleteUserFile(String fileName, String username) {
+        return restTemplate.exchange("http://localhost:8280" + UriComponentsBuilder.newInstance()
+                .path("/api/v1/notepad/file")
+                .queryParam("file-name", fileName)
+                .queryParam("username", username)
+                .toUriString(), HttpMethod.DELETE, null, Boolean.class)
+                .getBody();
+    }
 }

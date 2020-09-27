@@ -38,4 +38,10 @@ public class NotepadController {
         securityService.logIn("Kabaye");
         return notepadService.getUserFiles("Kabaye");
     }
+
+    @GetMapping("/test2")
+    public boolean deleteFile() {
+        securityService.logIn("Kabaye");
+        return notepadService.deleteUserFile("Родина - Михаил Лермонтов.txt", "Kabaye");
+    }
 }

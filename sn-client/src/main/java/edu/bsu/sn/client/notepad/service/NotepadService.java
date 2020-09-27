@@ -51,4 +51,8 @@ public class NotepadService {
     public FileContent addUserFile(String fileName, String username) {
         return securedNotepadClient.addUserFile(fileName, username);
     }
+
+    public void login(String username) {
+        securityService.logIn(username);
+    }
 }

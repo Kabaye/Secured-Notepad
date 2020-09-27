@@ -13,6 +13,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -22,7 +23,7 @@ public class NotepadService {
 
     @SneakyThrows
     public FileContent getFileContent(String fileName, String username) {
-        File file = ResourceUtils.getFile(ResourceUtils.CLASSPATH_URL_PREFIX + "initial/" + fileName);
+        File file = ResourceUtils.getFile(ResourceUtils.CLASSPATH_URL_PREFIX + "texts/" + username + "/" + fileName);
         String content = Files.readString(file.toPath(), StandardCharsets.UTF_8);
         return new FileContent()
                 .setFileContent(securityService.encryptText(content, username))
@@ -33,7 +34,7 @@ public class NotepadService {
     @SneakyThrows
     public UserFilesResponse getUserFiles(String username) {
         final File file = ResourceUtils.getFile(ResourceUtils.CLASSPATH_URL_PREFIX + "texts/" + username);
-        String files = Arrays.stream(file.listFiles())
+        String files = Arrays.stream(Objects.requireNonNull(file.listFiles()))
                 .map(File::getName)
                 .collect(Collectors.joining(","));
 

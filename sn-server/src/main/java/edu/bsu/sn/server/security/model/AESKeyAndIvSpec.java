@@ -3,6 +3,8 @@ package edu.bsu.sn.server.security.model;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
+import java.time.Instant;
+
 /**
  * @author svku0919
  * @version 27.09.2020
@@ -12,4 +14,5 @@ import lombok.experimental.Accessors;
 public class AESKeyAndIvSpec {
     private byte[] aesKey;
     private byte[] ivSpec;
+    private Instant expiresIn;
 }

@@ -18,6 +18,8 @@ import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.spec.EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Base64;
 import java.util.Map;
 
@@ -53,28 +55,39 @@ public class SecurityService {
         final Cipher cipherAESDecryption = Cipher.getInstance("AES/CBC/PKCS5Padding");
         cipherAESDecryption.init(Cipher.DECRYPT_MODE, sessionKey, params);
 
+        final Instant expiration = Instant.now().plus(Duration.ofHours(2));
+
         keyStore.getUsersCiphers().put(CIPHER_USER_ID_FORMAT.formatted(logInUser.getUsername()),
-                Map.entry(cipherAESEncryption, cipherAESDecryption));
+                Map.entry(expiration, Map.entry(cipherAESEncryption, cipherAESDecryption)));
 
         applicationEventPublisher.publishEvent(new UserLoggedIn().setName(logInUser.getUsername()));
         return new AESKeyAndIvSpec()
                 .setAesKey(result)
-                .setIvSpec(iv);
+                .setIvSpec(iv)
+                .setExpiresIn(expiration);
     }
 
     @SneakyThrows
     public String encryptText(String incomingText, String username) {
-        return Base64.getEncoder().encodeToString(keyStore.getUsersCiphers()
-                .get(CIPHER_USER_ID_FORMAT.formatted(username))
-                .getKey()
-                .doFinal(incomingText.getBytes()));
+        if (Instant.now().isBefore(keyStore.getUsersCiphers()
+                .get(CIPHER_USER_ID_FORMAT.formatted(username)).getKey())) {
+            return Base64.getEncoder().encodeToString(keyStore.getUsersCiphers()
+                    .get(CIPHER_USER_ID_FORMAT.formatted(username))
+                    .getValue().getKey()
+                    .doFinal(incomingText.getBytes()));
+        }
+        throw new RuntimeException("Session key is expired! Please, login again.");
     }
 
     @SneakyThrows
     public String decryptText(String fileContent, String username) {
-        return new String(keyStore.getUsersCiphers()
-                .get(CIPHER_USER_ID_FORMAT.formatted(username))
-                .getValue()
-                .doFinal(Base64.getDecoder().decode(fileContent)));
+        if (Instant.now().isBefore(keyStore.getUsersCiphers()
+                .get(CIPHER_USER_ID_FORMAT.formatted(username)).getKey())) {
+            return new String(keyStore.getUsersCiphers()
+                    .get(CIPHER_USER_ID_FORMAT.formatted(username))
+                    .getValue().getValue()
+                    .doFinal(Base64.getDecoder().decode(fileContent)));
+        }
+        throw new RuntimeException("Session key is expired! Please, login again.");
     }
 }

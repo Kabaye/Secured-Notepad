@@ -1,4 +1,4 @@
-package edu.bsu.sn.client.web.model;
+package edu.bsu.sn.client.security.model;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -7,5 +7,5 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 public class LogInUser {
     private byte[] publicKey;
-    private String login;
+    private String username;
 }

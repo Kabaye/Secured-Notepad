@@ -10,6 +10,7 @@ import org.springframework.util.ResourceUtils;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.Base64;
 
 @Service
 @RequiredArgsConstructor
@@ -18,11 +19,12 @@ public class NotepadService {
 
     @SneakyThrows
     public FileContent getFileContent(String fileName, String username) {
-        File file = ResourceUtils.getFile(ResourceUtils.CLASSPATH_URL_PREFIX + fileName);
+        File file = ResourceUtils.getFile(ResourceUtils.CLASSPATH_URL_PREFIX + "initial/" + fileName);
         String content = Files.readString(file.toPath(), StandardCharsets.UTF_8);
         return new FileContent()
-                .setFileContent(securityService.secureText(content, username))
-                .setFileName(fileName);
+                .setFileContent(Base64.getEncoder().encodeToString(securityService.secureText(content, username)))
+                .setFileName(fileName)
+                .setUsername(username);
     }
 
 }

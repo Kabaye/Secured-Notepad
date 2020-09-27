@@ -7,5 +7,5 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 public class LogInUser {
     private byte[] publicKey;
-    private String login;
+    private String username;
 }

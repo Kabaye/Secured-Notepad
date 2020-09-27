@@ -1,13 +1,16 @@
 package edu.bsu.sn.client;
 
-import org.springframework.boot.SpringApplication;
+import edu.bsu.sn.client.security.properties.SecurityProperties;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 
 @SpringBootApplication
+@EnableConfigurationProperties({SecurityProperties.class})
 public class SNClientApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(SNClientApplication.class, args);
+        new SpringApplicationBuilder(SNClientApplication.class).headless(false).run(args);
     }
 
 }

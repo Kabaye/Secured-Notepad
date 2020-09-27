@@ -24,7 +24,7 @@ public class NotepadService {
         File file = ResourceUtils.getFile(ResourceUtils.CLASSPATH_URL_PREFIX + "initial/" + fileName);
         String content = Files.readString(file.toPath(), StandardCharsets.UTF_8);
         return new FileContent()
-                .setFileContent(securityService.secureText(content, username))
+                .setFileContent(securityService.encryptText(content, username))
                 .setFileName(fileName)
                 .setUsername(username);
     }
@@ -36,7 +36,7 @@ public class NotepadService {
                 .map(File::getName)
                 .collect(Collectors.joining(","));
 
-        return new UserFilesResponse().setUserFiles(securityService.secureText(files, username));
+        return new UserFilesResponse().setUserFiles(securityService.encryptText(files, username));
     }
 
     @SneakyThrows
@@ -44,5 +44,16 @@ public class NotepadService {
         File file = ResourceUtils.getFile(ResourceUtils.CLASSPATH_URL_PREFIX + "texts/" + username +
                 "/" + fileName);
         return file.delete();
+    }
+
+    @SneakyThrows
+    public FileContent updateFileContent(FileContent fileContent) {
+        File file = ResourceUtils.getFile(ResourceUtils.CLASSPATH_URL_PREFIX + "texts/" +
+                fileContent.getUsername() + "/" + fileContent.getFileName());
+        Files.writeString(file.toPath(),
+                securityService.decryptText(fileContent.getFileContent(), fileContent.getUsername()),
+                StandardCharsets.UTF_8);
+
+        return fileContent;
     }
 }

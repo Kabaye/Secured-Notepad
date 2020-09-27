@@ -52,4 +52,10 @@ public class SecuredNotepadClient {
                 .toUriString(), HttpMethod.DELETE, null, Boolean.class)
                 .getBody();
     }
+
+    public FileContent updateUserFile(FileContent fileContent) {
+        return restTemplate.exchange("http://localhost:8280/api/v1/notepad/file", HttpMethod.PUT,
+                new HttpEntity<>(fileContent), FileContent.class)
+                .getBody();
+    }
 }

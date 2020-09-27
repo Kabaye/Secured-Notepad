@@ -13,7 +13,8 @@ import java.security.PublicKey;
 @Getter
 @Component
 public class CustomKeyStore {
-    private final Cipher cipherAES;
+    private final Cipher cipherAESDecryption;
+    private final Cipher cipherAESEncryption;
     private final Cipher cipherRSA;
     private final PublicKey publicKey;
     private final SecurityProperties securityProperties;
@@ -29,7 +30,8 @@ public class CustomKeyStore {
         cipherRSA = Cipher.getInstance("RSA/ECB/PKCS1Padding");
         cipherRSA.init(Cipher.DECRYPT_MODE, keyPair.getPrivate());
 
-        cipherAES = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        cipherAESDecryption = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        cipherAESEncryption = Cipher.getInstance("AES/CBC/PKCS5Padding");
 
         publicKey = keyPair.getPublic();
     }

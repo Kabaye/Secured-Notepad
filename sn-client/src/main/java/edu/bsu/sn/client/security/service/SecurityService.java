@@ -26,7 +26,8 @@ public class SecurityService {
 
     @SneakyThrows
     public String decryptText(String fileContent) {
-        byte[] decrypted = keyStore.getCipherAES().doFinal(Base64.getDecoder().decode(fileContent.getBytes()));
+        byte[] decrypted = keyStore.getCipherAESDecryption()
+                .doFinal(Base64.getDecoder().decode(fileContent.getBytes()));
         return new String(decrypted);
     }
 
@@ -37,7 +38,20 @@ public class SecurityService {
                 .setPublicKey(keyStore.getPublicKey().getEncoded()));
 
         byte[] aesKey = keyStore.getCipherRSA().doFinal(aesKeyAndIvSpec.getAesKey());
-        keyStore.getCipherAES().init(Cipher.DECRYPT_MODE, new SecretKeySpec(aesKey, "AES"),
-                new IvParameterSpec(aesKeyAndIvSpec.getIvSpec()));
+
+        final SecretKeySpec secretKeySpec = new SecretKeySpec(aesKey, "AES");
+        final IvParameterSpec ivParameterSpec = new IvParameterSpec(aesKeyAndIvSpec.getIvSpec());
+
+        keyStore.getCipherAESDecryption().init(Cipher.DECRYPT_MODE, secretKeySpec,
+                ivParameterSpec);
+        keyStore.getCipherAESEncryption().init(Cipher.ENCRYPT_MODE, secretKeySpec,
+                ivParameterSpec);
+    }
+
+    @SneakyThrows
+    public String encryptText(String fileContent) {
+        byte[] decrypted = keyStore.getCipherAESEncryption()
+                .doFinal(fileContent.getBytes());
+        return Base64.getEncoder().encodeToString(decrypted);
     }
 }

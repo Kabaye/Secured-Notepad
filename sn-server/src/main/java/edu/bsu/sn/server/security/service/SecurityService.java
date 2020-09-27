@@ -19,6 +19,7 @@ import java.security.SecureRandom;
 import java.security.spec.EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -44,11 +45,16 @@ public class SecurityService {
 
         byte[] iv = new byte[16];
         secureRandom.nextBytes(iv);
+        final IvParameterSpec params = new IvParameterSpec(iv);
 
-        final Cipher cipherAES = Cipher.getInstance("AES/CBC/PKCS5Padding");
-        cipherAES.init(Cipher.ENCRYPT_MODE, sessionKey, new IvParameterSpec(iv));
+        final Cipher cipherAESEncryption = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        cipherAESEncryption.init(Cipher.ENCRYPT_MODE, sessionKey, params);
 
-        keyStore.getUsersCiphers().put(CIPHER_USER_ID_FORMAT.formatted(logInUser.getUsername()), cipherAES);
+        final Cipher cipherAESDecryption = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        cipherAESDecryption.init(Cipher.DECRYPT_MODE, sessionKey, params);
+
+        keyStore.getUsersCiphers().put(CIPHER_USER_ID_FORMAT.formatted(logInUser.getUsername()),
+                Map.entry(cipherAESEncryption, cipherAESDecryption));
 
         applicationEventPublisher.publishEvent(new UserLoggedIn().setName(logInUser.getUsername()));
         return new AESKeyAndIvSpec()
@@ -57,9 +63,18 @@ public class SecurityService {
     }
 
     @SneakyThrows
-    public String secureText(String incomingText, String username) {
+    public String encryptText(String incomingText, String username) {
         return Base64.getEncoder().encodeToString(keyStore.getUsersCiphers()
                 .get(CIPHER_USER_ID_FORMAT.formatted(username))
+                .getKey()
                 .doFinal(incomingText.getBytes()));
+    }
+
+    @SneakyThrows
+    public String decryptText(String fileContent, String username) {
+        return new String(keyStore.getUsersCiphers()
+                .get(CIPHER_USER_ID_FORMAT.formatted(username))
+                .getValue()
+                .doFinal(Base64.getDecoder().decode(fileContent)));
     }
 }

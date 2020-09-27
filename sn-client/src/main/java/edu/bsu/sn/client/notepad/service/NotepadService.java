@@ -39,4 +39,12 @@ public class NotepadService {
     public boolean deleteUserFile(String fileName, String username) {
         return securedNotepadClient.deleteUserFile(fileName, username);
     }
+
+    public FileContent updateUserFile(FileContent fileContent) {
+        String encryptedContent = securityService.encryptText(fileContent.getFileContent());
+        fileContent.setFileContent(encryptedContent);
+        final FileContent updatedUserFile = securedNotepadClient.updateUserFile(fileContent);
+        updatedUserFile.setFileContent(securityService.decryptText(updatedUserFile.getFileContent()));
+        return updatedUserFile;
+    }
 }

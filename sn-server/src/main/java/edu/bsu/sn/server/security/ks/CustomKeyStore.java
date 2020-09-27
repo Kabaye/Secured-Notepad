@@ -6,12 +6,17 @@ import lombok.SneakyThrows;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.Cipher;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Getter
 @Component
 public class CustomKeyStore {
-    private final ConcurrentHashMap<String, Cipher> usersCiphers;
+
+    /**
+     * Second parameter is entry of cipher for encryption and cipher for decryption
+     */
+    private final ConcurrentHashMap<String, Map.Entry<Cipher, Cipher>> usersCiphers;
     private final SecurityProperties securityProperties;
 
     @SneakyThrows

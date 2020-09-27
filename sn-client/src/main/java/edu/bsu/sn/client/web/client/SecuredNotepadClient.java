@@ -1,6 +1,7 @@
 package edu.bsu.sn.client.web.client;
 
 import edu.bsu.sn.client.notepad.model.FileContent;
+import edu.bsu.sn.client.notepad.model.UserFilesResponse;
 import edu.bsu.sn.client.security.model.AESKeyAndIvSpec;
 import edu.bsu.sn.client.security.model.LogInUser;
 import lombok.SneakyThrows;
@@ -32,6 +33,14 @@ public class SecuredNotepadClient {
                 .queryParam("file-name", fileName)
                 .queryParam("username", username)
                 .toUriString(), HttpMethod.GET, null, FileContent.class)
+                .getBody();
+    }
+
+    public UserFilesResponse getUserFiles(String username) {
+        return restTemplate.exchange("http://localhost:8280" + UriComponentsBuilder.newInstance()
+                .path("/api/v1/notepad/files")
+                .queryParam("username", username)
+                .toUriString(), HttpMethod.GET, null, UserFilesResponse.class)
                 .getBody();
     }
 }

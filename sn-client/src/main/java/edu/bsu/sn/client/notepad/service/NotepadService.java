@@ -1,10 +1,16 @@
 package edu.bsu.sn.client.notepad.service;
 
 import edu.bsu.sn.client.notepad.model.FileContent;
+import edu.bsu.sn.client.notepad.model.UserFiles;
+import edu.bsu.sn.client.notepad.model.UserFilesResponse;
 import edu.bsu.sn.client.security.service.SecurityService;
 import edu.bsu.sn.client.web.client.SecuredNotepadClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author svku0919
@@ -21,5 +27,12 @@ public class NotepadService {
         FileContent fileContent = securedNotepadClient.getFileContent(fileName, username);
         String decryptedContent = securityService.decryptText(fileContent.getFileContent());
         return fileContent.setFileContent(decryptedContent);
+    }
+
+    public UserFiles getUserFiles(String username) {
+        UserFilesResponse userFilesResponse = securedNotepadClient.getUserFiles(username);
+        final String decryptedFilesList = securityService.decryptText(userFilesResponse.getUserFiles());
+        final List<String> filesList = Arrays.stream(decryptedFilesList.split(",")).collect(Collectors.toList());
+        return new UserFiles().setFileNames(filesList);
     }
 }

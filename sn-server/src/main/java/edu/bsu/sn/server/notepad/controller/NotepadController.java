@@ -1,6 +1,7 @@
 package edu.bsu.sn.server.notepad.controller;
 
 import edu.bsu.sn.server.notepad.model.FileContent;
+import edu.bsu.sn.server.notepad.model.UserFilesResponse;
 import edu.bsu.sn.server.notepad.service.NotepadService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,5 +22,10 @@ public class NotepadController {
     public FileContent getFileContent(@RequestParam("file-name") String fileName, @RequestParam("username") String username) {
         fileName = URLDecoder.decode(fileName, StandardCharsets.UTF_8);
         return notepadService.getFileContent(fileName, username);
+    }
+
+    @GetMapping("/files")
+    public UserFilesResponse getUserFiles(@RequestParam("username") String username) {
+        return notepadService.getUserFiles(username);
     }
 }

@@ -1,6 +1,7 @@
 package edu.bsu.sn.client.notepad.controller;
 
 import edu.bsu.sn.client.notepad.model.FileContent;
+import edu.bsu.sn.client.notepad.model.UserFiles;
 import edu.bsu.sn.client.notepad.service.NotepadService;
 import edu.bsu.sn.client.security.service.SecurityService;
 import lombok.RequiredArgsConstructor;
@@ -30,5 +31,11 @@ public class NotepadController {
         final FileContent fileContent = notepadService.getFileContent("Родина - Михаил Лермонтов.txt", "Kabaye");
         JOptionPane.showMessageDialog(null, fileContent.getFileContent());
         return fileContent;
+    }
+
+    @GetMapping("/test1")
+    public UserFiles getUserFiles() {
+        securityService.logIn("Kabaye");
+        return notepadService.getUserFiles("Kabaye");
     }
 }

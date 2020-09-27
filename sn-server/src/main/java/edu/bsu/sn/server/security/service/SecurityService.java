@@ -18,6 +18,7 @@ import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.spec.EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.Base64;
 
 @Service
 @RequiredArgsConstructor
@@ -56,9 +57,9 @@ public class SecurityService {
     }
 
     @SneakyThrows
-    public byte[] secureText(String incomingText, String username) {
-        return keyStore.getUsersCiphers()
+    public String secureText(String incomingText, String username) {
+        return Base64.getEncoder().encodeToString(keyStore.getUsersCiphers()
                 .get(CIPHER_USER_ID_FORMAT.formatted(username))
-                .doFinal(incomingText.getBytes());
+                .doFinal(incomingText.getBytes()));
     }
 }

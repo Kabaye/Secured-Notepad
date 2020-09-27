@@ -11,6 +11,7 @@ import org.springframework.util.ResourceUtils;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
@@ -55,5 +56,15 @@ public class NotepadService {
                 StandardCharsets.UTF_8);
 
         return fileContent;
+    }
+
+    @SneakyThrows
+    public FileContent addFile(String fileName, String username) {
+        File file = ResourceUtils.getFile(ResourceUtils.CLASSPATH_URL_PREFIX + "texts/" + username);
+        Files.createFile(Path.of(file.getAbsolutePath() + "\\" + fileName));
+        return new FileContent()
+                .setFileName(fileName)
+                .setUsername(username)
+                .setFileContent("");
     }
 }

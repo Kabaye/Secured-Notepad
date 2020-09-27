@@ -12,5 +12,4 @@ public class SNClientApplication {
     public static void main(String[] args) {
         new SpringApplicationBuilder(SNClientApplication.class).headless(false).run(args);
     }
-
 }

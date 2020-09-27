@@ -6,6 +6,7 @@ import edu.bsu.sn.server.notepad.service.NotepadService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -43,4 +44,8 @@ public class NotepadController {
         return notepadService.updateFileContent(fileContent);
     }
 
+    @PostMapping("/file")
+    public FileContent addFile(@RequestParam("file-name") String fileName, @RequestParam("username") String username) {
+        return notepadService.addFile(fileName, username);
+    }
 }

@@ -58,4 +58,13 @@ public class SecuredNotepadClient {
                 new HttpEntity<>(fileContent), FileContent.class)
                 .getBody();
     }
+
+    public FileContent addUserFile(String fileName, String username) {
+        return restTemplate.exchange("http://localhost:8280" + UriComponentsBuilder.newInstance()
+                .path("/api/v1/notepad/file")
+                .queryParam("file-name", fileName)
+                .queryParam("username", username)
+                .toUriString(), HttpMethod.POST, null, FileContent.class)
+                .getBody();
+    }
 }

@@ -47,4 +47,8 @@ public class NotepadService {
         updatedUserFile.setFileContent(securityService.decryptText(updatedUserFile.getFileContent()));
         return updatedUserFile;
     }
+
+    public FileContent addUserFile(String fileName, String username) {
+        return securedNotepadClient.addUserFile(fileName, username);
+    }
 }

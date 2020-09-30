@@ -1,8 +1,9 @@
 package edu.bsu.sn.client.security.service;
 
 import edu.bsu.sn.client.security.ks.CustomKeyStore;
-import edu.bsu.sn.client.security.model.AESKeyAndIvSpec;
 import edu.bsu.sn.client.security.model.LogInUser;
+import edu.bsu.sn.client.security.model.SessionKeyAndUser;
+import edu.bsu.sn.client.security.model.SessionKeyRequest;
 import edu.bsu.sn.client.web.client.SecuredNotepadClient;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -12,6 +13,7 @@ import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.util.Base64;
+import java.util.Objects;
 
 /**
  * @author svku0919
@@ -32,20 +34,33 @@ public class SecurityService {
     }
 
     @SneakyThrows
-    public void logIn(String username) {
-        AESKeyAndIvSpec aesKeyAndIvSpec = securedNotepadClient.logIn(new LogInUser()
+    public LogInUser getSessionKey(String username) {
+        SessionKeyAndUser sessionKeyAndUser = securedNotepadClient.getSessionKey(new SessionKeyRequest()
                 .setUsername(username)
                 .setPublicKey(keyStore.getPublicKey().getEncoded()));
 
-        byte[] aesKey = keyStore.getCipherRSA().doFinal(aesKeyAndIvSpec.getAesKey());
+        byte[] aesKey = keyStore.getCipherRSA().doFinal(sessionKeyAndUser.getAesKey());
 
         final SecretKeySpec secretKeySpec = new SecretKeySpec(aesKey, "AES");
-        final IvParameterSpec ivParameterSpec = new IvParameterSpec(aesKeyAndIvSpec.getIvSpec());
+        final IvParameterSpec ivParameterSpec = new IvParameterSpec(sessionKeyAndUser.getIvSpec());
 
         keyStore.getCipherAESDecryption().init(Cipher.DECRYPT_MODE, secretKeySpec,
                 ivParameterSpec);
         keyStore.getCipherAESEncryption().init(Cipher.ENCRYPT_MODE, secretKeySpec,
                 ivParameterSpec);
+
+        if (Objects.nonNull(sessionKeyAndUser.getPassword())) {
+            return new LogInUser()
+                    .setPassword(keyStore.getCipherAESDecryption().doFinal(sessionKeyAndUser.getPassword()))
+                    .setUsername(username);
+        }
+        return new LogInUser().setUsername(username);
+    }
+
+    @SneakyThrows
+    public boolean logIn(LogInUser logInUser) {
+        logInUser.setPassword(keyStore.getCipherAESEncryption().doFinal(logInUser.getPassword()));
+        return securedNotepadClient.logIn(logInUser);
     }
 
     @SneakyThrows

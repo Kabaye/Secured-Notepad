@@ -1,13 +1,14 @@
 package edu.bsu.sn.server.notepad.listener;
 
-import edu.bsu.sn.server.notepad.model.event.UserLoggedIn;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import edu.bsu.sn.server.notepad.model.event.NewUserEvent;
 import lombok.SneakyThrows;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.springframework.util.FileSystemUtils;
 import org.springframework.util.ResourceUtils;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 @Component
 public class NotepadListener {
@@ -23,9 +24,9 @@ public class NotepadListener {
 
     @SneakyThrows
     @EventListener
-    public void checkDirectoryForNewUser(UserLoggedIn userLoggedIn) {
+    public void checkDirectoryForNewUser(NewUserEvent newUserEvent) {
         Path source = ResourceUtils.getFile("classpath:initial").toPath();
-        Path targetDir = Path.of(ResourceUtils.getFile("classpath:texts").getAbsolutePath() + "\\" + userLoggedIn.getName());
+        Path targetDir = Path.of(ResourceUtils.getFile("classpath:texts").getAbsolutePath() + "\\" + newUserEvent.getName());
         if (Files.notExists(targetDir)) {
             Files.createDirectory(targetDir);
             FileSystemUtils.copyRecursively(source, targetDir);

@@ -3,13 +3,9 @@ package edu.bsu.sn.server.security.model;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
-/**
- * @author svku0919
- * @version 30.09.2020
- */
 @Data
 @Accessors(chain = true)
-public class LogInUser {
+public class SessionKeyRequest {
+    private byte[] publicKey;
     private String username;
-    private byte[] password;
 }

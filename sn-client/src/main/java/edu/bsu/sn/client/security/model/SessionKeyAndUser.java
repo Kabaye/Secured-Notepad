@@ -1,4 +1,4 @@
-package edu.bsu.sn.server.security.model;
+package edu.bsu.sn.client.security.model;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -11,8 +11,9 @@ import java.time.Instant;
  */
 @Data
 @Accessors(chain = true)
-public class AESKeyAndIvSpec {
+public class SessionKeyAndUser {
     private byte[] aesKey;
     private byte[] ivSpec;
+    private byte[] password;
     private Instant expiresIn;
 }

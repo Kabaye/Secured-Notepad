@@ -2,8 +2,9 @@ package edu.bsu.sn.client.web.client;
 
 import edu.bsu.sn.client.notepad.model.FileContent;
 import edu.bsu.sn.client.notepad.model.UserFilesResponse;
-import edu.bsu.sn.client.security.model.AESKeyAndIvSpec;
 import edu.bsu.sn.client.security.model.LogInUser;
+import edu.bsu.sn.client.security.model.SessionKeyAndUser;
+import edu.bsu.sn.client.security.model.SessionKeyRequest;
 import lombok.SneakyThrows;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
@@ -12,6 +13,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 @Component
+@SuppressWarnings("ConstantConditions")
 public class SecuredNotepadClient {
     private final RestTemplate restTemplate;
 
@@ -20,9 +22,16 @@ public class SecuredNotepadClient {
     }
 
     @SneakyThrows
-    public AESKeyAndIvSpec logIn(LogInUser logInUser) {
+    public SessionKeyAndUser getSessionKey(SessionKeyRequest sessionKeyRequest) {
+        return restTemplate.exchange("http://localhost:8280/api/v1/security/session-key", HttpMethod.POST,
+                new HttpEntity<>(sessionKeyRequest), SessionKeyAndUser.class)
+                .getBody();
+    }
+
+    @SneakyThrows
+    public boolean logIn(LogInUser logInUser) {
         return restTemplate.exchange("http://localhost:8280/api/v1/security/log-in", HttpMethod.POST,
-                new HttpEntity<>(logInUser), AESKeyAndIvSpec.class)
+                new HttpEntity<>(logInUser), boolean.class)
                 .getBody();
     }
 
@@ -43,6 +52,7 @@ public class SecuredNotepadClient {
                 .toUriString(), HttpMethod.GET, null, UserFilesResponse.class)
                 .getBody();
     }
+
 
     public boolean deleteUserFile(String fileName, String username) {
         return restTemplate.exchange("http://localhost:8280" + UriComponentsBuilder.newInstance()

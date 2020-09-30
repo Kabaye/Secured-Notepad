@@ -4,9 +4,11 @@ import edu.bsu.sn.client.console.view.ConsoleView;
 import edu.bsu.sn.client.notepad.model.FileContent;
 import edu.bsu.sn.client.notepad.model.UserFiles;
 import edu.bsu.sn.client.notepad.service.NotepadService;
+import edu.bsu.sn.client.security.model.LogInUser;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
+import java.util.Objects;
 import java.util.Scanner;
 import java.util.StringTokenizer;
 
@@ -68,7 +70,17 @@ public class ConsoleProcessor {
 
     public void login() {
         currentUsername = consoleView.askForUsername();
-        notepadService.login(currentUsername);
+        LogInUser logInUser = notepadService.getSessionKey(currentUsername);
+        if (Objects.isNull(logInUser.getPassword())) {
+            byte[] password = consoleView.askForPassword();
+            if (!notepadService.logIn(logInUser.setPassword(password))) {
+                throw new RuntimeException("Wrong password or something went wrong. Try again later!");
+            }
+            consoleView.printStr("You successfully logged in!");
+            return;
+        }
+        consoleView.viewUserData(logInUser);
+        consoleView.printStr("You successfully logged in!");
     }
 
     public void getFile() {

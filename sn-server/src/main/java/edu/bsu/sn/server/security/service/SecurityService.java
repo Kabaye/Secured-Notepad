@@ -1,9 +1,11 @@
 package edu.bsu.sn.server.security.service;
 
-import edu.bsu.sn.server.notepad.model.event.UserLoggedIn;
+import edu.bsu.sn.server.notepad.model.event.NewUserEvent;
 import edu.bsu.sn.server.security.ks.CustomKeyStore;
-import edu.bsu.sn.server.security.model.AESKeyAndIvSpec;
 import edu.bsu.sn.server.security.model.LogInUser;
+import edu.bsu.sn.server.security.model.SessionKeyAndUser;
+import edu.bsu.sn.server.security.model.SessionKeyRequest;
+import edu.bsu.sn.server.security.ps.CustomPasswordStore;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.context.ApplicationEventPublisher;
@@ -22,6 +24,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.Map;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -31,12 +34,13 @@ public class SecurityService {
     private final KeyGenerator keyGeneratorAES;
     private final ApplicationEventPublisher applicationEventPublisher;
     private final SecureRandom secureRandom = new SecureRandom();
+    private final CustomPasswordStore passwordStore;
 
     private static final String CIPHER_USER_ID_FORMAT = "user-%s-cipher";
 
     @SneakyThrows
-    public AESKeyAndIvSpec logInAndGetSecretKey(LogInUser logInUser) {
-        EncodedKeySpec encodedKeySpec = new X509EncodedKeySpec(logInUser.getPublicKey());
+    public SessionKeyAndUser getSessionKey(SessionKeyRequest sessionKeyRequest) {
+        EncodedKeySpec encodedKeySpec = new X509EncodedKeySpec(sessionKeyRequest.getPublicKey());
         PublicKey publicKey = keyFactoryRSA.generatePublic(encodedKeySpec);
 
         SecretKey sessionKey = keyGeneratorAES.generateKey();
@@ -57,36 +61,60 @@ public class SecurityService {
 
         final Instant expiration = Instant.now().plus(Duration.ofHours(2));
 
-        keyStore.getUsersCiphers().put(CIPHER_USER_ID_FORMAT.formatted(logInUser.getUsername()),
+        keyStore.getUsersCiphers().put(CIPHER_USER_ID_FORMAT.formatted(sessionKeyRequest.getUsername()),
                 Map.entry(expiration, Map.entry(cipherAESEncryption, cipherAESDecryption)));
 
-        applicationEventPublisher.publishEvent(new UserLoggedIn().setName(logInUser.getUsername()));
-        return new AESKeyAndIvSpec()
+        byte[] passwordEncrypted = null;
+        if (Objects.isNull(passwordStore.getPassword(sessionKeyRequest.getUsername()))) {
+            byte[] password = passwordStore.generateRandomPassword();
+            passwordStore.addPassword(sessionKeyRequest.getUsername(), password);
+
+            passwordEncrypted = cipherAESEncryption.doFinal(password);
+
+            applicationEventPublisher.publishEvent(new NewUserEvent().setName(sessionKeyRequest.getUsername()));
+        }
+
+        return new SessionKeyAndUser()
                 .setAesKey(result)
                 .setIvSpec(iv)
+                .setPassword(passwordEncrypted)
                 .setExpiresIn(expiration);
     }
 
     @SneakyThrows
-    public String encryptText(String incomingText, String username) {
+    public boolean login(LogInUser logInUser) {
+        final byte[] password = keyStore.getUsersCiphers()
+                .get(CIPHER_USER_ID_FORMAT.formatted(logInUser.getUsername()))
+                .getValue().getValue()
+                .doFinal(logInUser.getPassword());
+        final boolean loggedIn = passwordStore.checkPassword(logInUser.getUsername(),
+                password);
+        if (!loggedIn) {
+            keyStore.getUsersCiphers().remove(logInUser.getUsername());
+        }
+        return loggedIn;
+    }
+
+    @SneakyThrows
+    public String encryptText(String text, String username) {
         if (Instant.now().isBefore(keyStore.getUsersCiphers()
                 .get(CIPHER_USER_ID_FORMAT.formatted(username)).getKey())) {
             return Base64.getEncoder().encodeToString(keyStore.getUsersCiphers()
                     .get(CIPHER_USER_ID_FORMAT.formatted(username))
                     .getValue().getKey()
-                    .doFinal(incomingText.getBytes()));
+                    .doFinal(text.getBytes()));
         }
         throw new RuntimeException("Session key is expired! Please, login again.");
     }
 
     @SneakyThrows
-    public String decryptText(String fileContent, String username) {
+    public String decryptText(String text, String username) {
         if (Instant.now().isBefore(keyStore.getUsersCiphers()
                 .get(CIPHER_USER_ID_FORMAT.formatted(username)).getKey())) {
             return new String(keyStore.getUsersCiphers()
                     .get(CIPHER_USER_ID_FORMAT.formatted(username))
                     .getValue().getValue()
-                    .doFinal(Base64.getDecoder().decode(fileContent)));
+                    .doFinal(Base64.getDecoder().decode(text)));
         }
         throw new RuntimeException("Session key is expired! Please, login again.");
     }

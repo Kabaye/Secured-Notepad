@@ -1,7 +1,8 @@
 package edu.bsu.sn.server.security.controller;
 
-import edu.bsu.sn.server.security.model.AESKeyAndIvSpec;
 import edu.bsu.sn.server.security.model.LogInUser;
+import edu.bsu.sn.server.security.model.SessionKeyAndUser;
+import edu.bsu.sn.server.security.model.SessionKeyRequest;
 import edu.bsu.sn.server.security.service.SecurityService;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -17,8 +18,14 @@ public class SecurityController {
     private final SecurityService securityService;
 
     @SneakyThrows
+    @PostMapping("/session-key")
+    public SessionKeyAndUser getSessionKey(@RequestBody SessionKeyRequest sessionKeyRequest) {
+        return securityService.getSessionKey(sessionKeyRequest);
+    }
+
+    @SneakyThrows
     @PostMapping("/log-in")
-    public AESKeyAndIvSpec logIn(@RequestBody LogInUser logInUser) {
-        return securityService.logInAndGetSecretKey(logInUser);
+    public boolean logIn(@RequestBody LogInUser logInUser) {
+        return securityService.login(logInUser);
     }
 }

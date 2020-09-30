@@ -1,6 +1,5 @@
 package edu.bsu.sn.client.security.ks;
 
-import edu.bsu.sn.client.security.properties.SecurityProperties;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Component;
@@ -17,12 +16,9 @@ public class CustomKeyStore {
     private final Cipher cipherAESEncryption;
     private final Cipher cipherRSA;
     private final PublicKey publicKey;
-    private final SecurityProperties securityProperties;
 
     @SneakyThrows
-    public CustomKeyStore(SecurityProperties securityProperties) {
-        this.securityProperties = securityProperties;
-
+    public CustomKeyStore() {
         KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
         keyPairGenerator.initialize(4096);
         KeyPair keyPair = keyPairGenerator.generateKeyPair();

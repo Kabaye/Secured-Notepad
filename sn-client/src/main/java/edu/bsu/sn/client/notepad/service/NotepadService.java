@@ -3,6 +3,7 @@ package edu.bsu.sn.client.notepad.service;
 import edu.bsu.sn.client.notepad.model.FileContent;
 import edu.bsu.sn.client.notepad.model.UserFiles;
 import edu.bsu.sn.client.notepad.model.UserFilesResponse;
+import edu.bsu.sn.client.security.model.LogInUser;
 import edu.bsu.sn.client.security.service.SecurityService;
 import edu.bsu.sn.client.web.client.SecuredNotepadClient;
 import lombok.RequiredArgsConstructor;
@@ -52,7 +53,11 @@ public class NotepadService {
         return securedNotepadClient.addUserFile(fileName, username);
     }
 
-    public void login(String username) {
-        securityService.logIn(username);
+    public LogInUser getSessionKey(String username) {
+        return securityService.getSessionKey(username);
+    }
+
+    public boolean logIn(LogInUser logInUser) {
+        return securityService.logIn(logInUser);
     }
 }

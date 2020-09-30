@@ -15,6 +15,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 @Component
 @SuppressWarnings("ConstantConditions")
 public class SecuredNotepadClient {
+    private static final String HOSTNAME = "https://secured-notepad-server.herokuapp.com";
     private final RestTemplate restTemplate;
 
     public SecuredNotepadClient() {
@@ -23,21 +24,21 @@ public class SecuredNotepadClient {
 
     @SneakyThrows
     public SessionKeyAndUser getSessionKey(SessionKeyRequest sessionKeyRequest) {
-        return restTemplate.exchange("http://localhost:8280/api/v1/security/session-key", HttpMethod.POST,
+        return restTemplate.exchange(HOSTNAME + "/api/v1/security/session-key", HttpMethod.POST,
                 new HttpEntity<>(sessionKeyRequest), SessionKeyAndUser.class)
                 .getBody();
     }
 
     @SneakyThrows
     public boolean logIn(LogInUser logInUser) {
-        return restTemplate.exchange("http://localhost:8280/api/v1/security/log-in", HttpMethod.POST,
+        return restTemplate.exchange(HOSTNAME + "/api/v1/security/log-in", HttpMethod.POST,
                 new HttpEntity<>(logInUser), boolean.class)
                 .getBody();
     }
 
     @SneakyThrows
     public FileContent getFileContent(String fileName, String username) {
-        return restTemplate.exchange("http://localhost:8280" + UriComponentsBuilder.newInstance()
+        return restTemplate.exchange(HOSTNAME + UriComponentsBuilder.newInstance()
                 .path("/api/v1/notepad/file")
                 .queryParam("file-name", fileName)
                 .queryParam("username", username)
@@ -46,7 +47,7 @@ public class SecuredNotepadClient {
     }
 
     public UserFilesResponse getUserFiles(String username) {
-        return restTemplate.exchange("http://localhost:8280" + UriComponentsBuilder.newInstance()
+        return restTemplate.exchange(HOSTNAME + UriComponentsBuilder.newInstance()
                 .path("/api/v1/notepad/files")
                 .queryParam("username", username)
                 .toUriString(), HttpMethod.GET, null, UserFilesResponse.class)
@@ -55,7 +56,7 @@ public class SecuredNotepadClient {
 
 
     public boolean deleteUserFile(String fileName, String username) {
-        return restTemplate.exchange("http://localhost:8280" + UriComponentsBuilder.newInstance()
+        return restTemplate.exchange(HOSTNAME + UriComponentsBuilder.newInstance()
                 .path("/api/v1/notepad/file")
                 .queryParam("file-name", fileName)
                 .queryParam("username", username)
@@ -64,13 +65,13 @@ public class SecuredNotepadClient {
     }
 
     public FileContent updateUserFile(FileContent fileContent) {
-        return restTemplate.exchange("http://localhost:8280/api/v1/notepad/file", HttpMethod.PUT,
+        return restTemplate.exchange(HOSTNAME + "/api/v1/notepad/file", HttpMethod.PUT,
                 new HttpEntity<>(fileContent), FileContent.class)
                 .getBody();
     }
 
     public FileContent addUserFile(String fileName, String username) {
-        return restTemplate.exchange("http://localhost:8280" + UriComponentsBuilder.newInstance()
+        return restTemplate.exchange(HOSTNAME + UriComponentsBuilder.newInstance()
                 .path("/api/v1/notepad/file")
                 .queryParam("file-name", fileName)
                 .queryParam("username", username)

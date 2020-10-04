@@ -3,8 +3,9 @@ package edu.bsu.sn.client.console.view;
 import edu.bsu.sn.client.notepad.model.FileContent;
 import edu.bsu.sn.client.notepad.model.UserFiles;
 import edu.bsu.sn.client.security.model.LogInUser;
-import org.springframework.stereotype.Component;
-
+import java.awt.Dimension;
+import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -12,9 +13,7 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-import java.awt.Dimension;
-import java.nio.charset.StandardCharsets;
-import java.util.Objects;
+import org.springframework.stereotype.Component;
 
 /**
  * @author svku0919
@@ -80,7 +79,12 @@ public class ConsoleView {
     }
 
     public void viewFiles(UserFiles userFiles) {
-        JOptionPane.showMessageDialog(jFrame, userFiles.getFileNames().toArray(), "User files",
+        JTextArea textArea = new JTextArea(String.join("\n", userFiles.getFileNames()));
+        textArea.setLineWrap(true);
+        textArea.setWrapStyleWord(true);
+        textArea.setEditable(false);
+        textArea.setPreferredSize(new Dimension(250, 250));
+        JOptionPane.showMessageDialog(jFrame, new JScrollPane(textArea), "User files",
                 JOptionPane.INFORMATION_MESSAGE);
     }
 

@@ -1,19 +1,19 @@
 package edu.bsu.sn.client.security.ks;
 
-import lombok.Getter;
-import lombok.SneakyThrows;
-import org.springframework.stereotype.Component;
-
-import javax.crypto.Cipher;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.PublicKey;
+import javax.crypto.Cipher;
+import lombok.Getter;
+import lombok.SneakyThrows;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.springframework.stereotype.Component;
 
 @Getter
 @Component
 public class CustomKeyStore {
-    private final Cipher cipherAESDecryption;
-    private final Cipher cipherAESEncryption;
+    private final Cipher cipherSerpentDecryption;
+    private final Cipher cipherSerpentEncryption;
     private final Cipher cipherRSA;
     private final PublicKey publicKey;
 
@@ -26,8 +26,8 @@ public class CustomKeyStore {
         cipherRSA = Cipher.getInstance("RSA/ECB/PKCS1Padding");
         cipherRSA.init(Cipher.DECRYPT_MODE, keyPair.getPrivate());
 
-        cipherAESDecryption = Cipher.getInstance("AES/CBC/PKCS5Padding");
-        cipherAESEncryption = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        cipherSerpentDecryption = Cipher.getInstance("Serpent/CBC/PKCS5Padding", new BouncyCastleProvider());
+        cipherSerpentEncryption = Cipher.getInstance("Serpent/CBC/PKCS5Padding", new BouncyCastleProvider());
 
         publicKey = keyPair.getPublic();
     }

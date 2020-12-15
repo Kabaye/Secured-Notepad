@@ -5,15 +5,14 @@ import edu.bsu.sn.client.security.model.LogInUser;
 import edu.bsu.sn.client.security.model.SessionKeyAndUser;
 import edu.bsu.sn.client.security.model.SessionKeyRequest;
 import edu.bsu.sn.client.web.client.SecuredNotepadClient;
-import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
-import org.springframework.stereotype.Service;
-
+import java.util.Base64;
+import java.util.Objects;
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-import java.util.Base64;
-import java.util.Objects;
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+import org.springframework.stereotype.Service;
 
 /**
  * @author svku0919
@@ -28,7 +27,7 @@ public class SecurityService {
 
     @SneakyThrows
     public String decryptText(String fileContent) {
-        byte[] decrypted = keyStore.getCipherAESDecryption()
+        byte[] decrypted = keyStore.getCipherSerpentDecryption()
                 .doFinal(Base64.getDecoder().decode(fileContent.getBytes()));
         return new String(decrypted);
     }
@@ -39,19 +38,19 @@ public class SecurityService {
                 .setUsername(username)
                 .setPublicKey(keyStore.getPublicKey().getEncoded()));
 
-        byte[] aesKey = keyStore.getCipherRSA().doFinal(sessionKeyAndUser.getAesKey());
+        byte[] serpentKey = keyStore.getCipherRSA().doFinal(sessionKeyAndUser.getAesKey());
 
-        final SecretKeySpec secretKeySpec = new SecretKeySpec(aesKey, "AES");
+        final SecretKeySpec secretKeySpec = new SecretKeySpec(serpentKey, "Serpent");
         final IvParameterSpec ivParameterSpec = new IvParameterSpec(sessionKeyAndUser.getIvSpec());
 
-        keyStore.getCipherAESDecryption().init(Cipher.DECRYPT_MODE, secretKeySpec,
+        keyStore.getCipherSerpentDecryption().init(Cipher.DECRYPT_MODE, secretKeySpec,
                 ivParameterSpec);
-        keyStore.getCipherAESEncryption().init(Cipher.ENCRYPT_MODE, secretKeySpec,
+        keyStore.getCipherSerpentEncryption().init(Cipher.ENCRYPT_MODE, secretKeySpec,
                 ivParameterSpec);
 
         if (Objects.nonNull(sessionKeyAndUser.getPassword())) {
             return new LogInUser()
-                    .setPassword(keyStore.getCipherAESDecryption().doFinal(sessionKeyAndUser.getPassword()))
+                    .setPassword(keyStore.getCipherSerpentDecryption().doFinal(sessionKeyAndUser.getPassword()))
                     .setUsername(username);
         }
         return new LogInUser().setUsername(username);
@@ -59,13 +58,13 @@ public class SecurityService {
 
     @SneakyThrows
     public boolean logIn(LogInUser logInUser) {
-        logInUser.setPassword(keyStore.getCipherAESEncryption().doFinal(logInUser.getPassword()));
+        logInUser.setPassword(keyStore.getCipherSerpentEncryption().doFinal(logInUser.getPassword()));
         return securedNotepadClient.logIn(logInUser);
     }
 
     @SneakyThrows
     public String encryptText(String fileContent) {
-        byte[] decrypted = keyStore.getCipherAESEncryption()
+        byte[] decrypted = keyStore.getCipherSerpentEncryption()
                 .doFinal(fileContent.getBytes());
         return Base64.getEncoder().encodeToString(decrypted);
     }

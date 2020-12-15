@@ -6,15 +6,6 @@ import edu.bsu.sn.server.security.model.LogInUser;
 import edu.bsu.sn.server.security.model.SessionKeyAndUser;
 import edu.bsu.sn.server.security.model.SessionKeyRequest;
 import edu.bsu.sn.server.security.ps.CustomPasswordStore;
-import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.stereotype.Service;
-
-import javax.crypto.Cipher;
-import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.IvParameterSpec;
 import java.security.KeyFactory;
 import java.security.PublicKey;
 import java.security.SecureRandom;
@@ -25,13 +16,21 @@ import java.time.Instant;
 import java.util.Base64;
 import java.util.Map;
 import java.util.Objects;
+import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class SecurityService {
     private final KeyFactory keyFactoryRSA;
     private final CustomKeyStore keyStore;
-    private final KeyGenerator keyGeneratorAES;
+    private final KeyGenerator keyGeneratorSerpent;
     private final ApplicationEventPublisher applicationEventPublisher;
     private final SecureRandom secureRandom = new SecureRandom();
     private final CustomPasswordStore passwordStore;
@@ -43,7 +42,7 @@ public class SecurityService {
         EncodedKeySpec encodedKeySpec = new X509EncodedKeySpec(sessionKeyRequest.getPublicKey());
         PublicKey publicKey = keyFactoryRSA.generatePublic(encodedKeySpec);
 
-        SecretKey sessionKey = keyGeneratorAES.generateKey();
+        SecretKey sessionKey = keyGeneratorSerpent.generateKey();
 
         Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
         cipher.init(Cipher.ENCRYPT_MODE, publicKey);
@@ -53,23 +52,23 @@ public class SecurityService {
         secureRandom.nextBytes(iv);
         final IvParameterSpec params = new IvParameterSpec(iv);
 
-        final Cipher cipherAESEncryption = Cipher.getInstance("AES/CBC/PKCS5Padding");
-        cipherAESEncryption.init(Cipher.ENCRYPT_MODE, sessionKey, params);
+        final Cipher cipherSerpentEncryption = Cipher.getInstance("Serpent/CBC/PKCS5Padding", new org.bouncycastle.jce.provider.BouncyCastleProvider());
+        cipherSerpentEncryption.init(Cipher.ENCRYPT_MODE, sessionKey, params);
 
-        final Cipher cipherAESDecryption = Cipher.getInstance("AES/CBC/PKCS5Padding");
-        cipherAESDecryption.init(Cipher.DECRYPT_MODE, sessionKey, params);
+        final Cipher cipherSerpentDecryption = Cipher.getInstance("Serpent/CBC/PKCS5Padding", new org.bouncycastle.jce.provider.BouncyCastleProvider());
+        cipherSerpentDecryption.init(Cipher.DECRYPT_MODE, sessionKey, params);
 
         final Instant expiration = Instant.now().plus(Duration.ofHours(2));
 
         keyStore.getUsersCiphers().put(CIPHER_USER_ID_FORMAT.formatted(sessionKeyRequest.getUsername()),
-                Map.entry(expiration, Map.entry(cipherAESEncryption, cipherAESDecryption)));
+                Map.entry(expiration, Map.entry(cipherSerpentEncryption, cipherSerpentDecryption)));
 
         byte[] passwordEncrypted = null;
         if (Objects.isNull(passwordStore.getPassword(sessionKeyRequest.getUsername()))) {
             byte[] password = passwordStore.generateRandomPassword();
             passwordStore.addPassword(sessionKeyRequest.getUsername(), password);
 
-            passwordEncrypted = cipherAESEncryption.doFinal(password);
+            passwordEncrypted = cipherSerpentEncryption.doFinal(password);
 
             applicationEventPublisher.publishEvent(new NewUserEvent().setName(sessionKeyRequest.getUsername()));
         }
